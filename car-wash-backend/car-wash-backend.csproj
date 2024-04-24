@@ -7,4 +7,26 @@
         <RootNamespace>car_wash_backend</RootNamespace>
     </PropertyGroup>
 
+    <!-- автоматически запускает car-wash-service, но только фронт (без db.json) -->
+    <PropertyGroup>
+        <!-- SpaYarp configuration -->
+        <SpaRoot>D:\ИРИТ\3 курс\LegendaryTeam\car-wash-service</SpaRoot>
+        <SpaClientUrl>http://localhost:5173</SpaClientUrl>
+        <SpaLaunchCommand>npm run dev</SpaLaunchCommand>
+        <!-- Change the timeout of the proxy (defaults to 120 seconds) 
+        <SpaProxyTimeoutInSeconds>120</SpaProxyTimeoutInSeconds> -->
+        <!-- Optionally forward only request starting with the specified path 
+        <SpaPublicPath>/dist</SpaPublicPath> -->
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AspNetCore.SpaYarp" Version="2.0.1" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
+    </ItemGroup>
+
 </Project>

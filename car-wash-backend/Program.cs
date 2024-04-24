@@ -1,7 +1,17 @@
+using car_wash_backend.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddSpaYarp();
+
+//будет создан только один сервис при первом запросе
+builder.Services.AddScoped<ICarwashService,CarwashService>(s => new CarwashService("connectionString"));
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -24,5 +34,28 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+//тут запросы перенаправляются на разработческий сервер (car-wash-service)
+//перед развертыванием проекта убрать
+app.UseSpaYarp();
+
 app.MapFallbackToFile("index.html");
+
 app.Run();
+
+public interface ICarwashService
+{
+    string Carwash();
+}
+
+public class CarwashService : ICarwashService
+{
+    public CarwashService(string connectionString)
+    {
+        
+    }
+    
+    public string Carwash()
+    {
+        return "какая-то автомойка";
+    }
+}
