@@ -7,9 +7,22 @@ namespace car_wash_backend.Controllers;
 public class CarwashController : Controller
 {
     
-    [HttpGet("/server/Carwash")]
-    public async Task<ActionResult<IEnumerable<Carwash>>> GetCarwashes(CarWashContext db)
+    private readonly CarWashContext _context;
+
+    public CarwashController(CarWashContext context)
     {
-        return await db.Carwashes.ToListAsync();
+        _context = context;
     }
+
+    // [HttpGet("/owner")]
+    // public async Task<ActionResult<IEnumerable<Carwash>>> GetCarwashes()
+    // {
+    //     return await _context.Carwashes.ToListAsync();
+    // }
+    //
+    // [HttpPut("/Carwash/{id}")]
+    // public IActionResult PutCarwash(int id)
+    // {
+    //     return Ok("Hi there" + id);
+    // }
 }
