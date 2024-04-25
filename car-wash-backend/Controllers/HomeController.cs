@@ -7,12 +7,10 @@ namespace car_wash_backend.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly ICarwashService _carwashService;
 
-    public HomeController(ILogger<HomeController> logger, ICarwashService carwashService)
+    public HomeController(ILogger<HomeController> logger)
     {
         _logger = logger;
-        _carwashService = carwashService;
     }
 
     [HttpPut("/Carwash/{id}")]
@@ -24,7 +22,7 @@ public class HomeController : Controller
     [HttpGet("/Carwash")]
     public IActionResult Index()
     {
-        return Ok(_carwashService.Carwash());
+        return Ok();
     }
     
 }

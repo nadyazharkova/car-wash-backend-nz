@@ -1,4 +1,4 @@
-using car_wash_backend.Data;
+using car_wash_backend.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,9 +8,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSpaYarp();
 
 //будет создан только один сервис при первом запросе
-builder.Services.AddScoped<ICarwashService,CarwashService>(s => new CarwashService("connectionString"));
+//builder.Services.AddScoped<ICarwashService,CarwashService>(s => new CarwashService("connectionString"));
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<CarWashContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
@@ -41,21 +41,3 @@ app.UseSpaYarp();
 app.MapFallbackToFile("index.html");
 
 app.Run();
-
-public interface ICarwashService
-{
-    string Carwash();
-}
-
-public class CarwashService : ICarwashService
-{
-    public CarwashService(string connectionString)
-    {
-        
-    }
-    
-    public string Carwash()
-    {
-        return "какая-то автомойка";
-    }
-}
