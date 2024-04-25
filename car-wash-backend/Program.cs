@@ -1,4 +1,7 @@
-using car_wash_backend.Data;
+using System.Security.Claims;
+using car_wash_backend.Api;
+using car_wash_backend.Models;
+using car_wash_backend.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,11 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSpaYarp();
 
-//будет создан только один сервис при первом запросе
-builder.Services.AddScoped<ICarwashService,CarwashService>(s => new CarwashService("connectionString"));
-
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<CarWashContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//будет создан только один сервис при первом запросе
+builder.Services.AddScoped<UserAccessor>();
+builder.Services.AddHttpContextAccessor();//очень важная строчка!!
 
 var app = builder.Build();
 
@@ -28,6 +32,27 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.Use(async (context, next) =>
+{
+    using (var dbContext = new CarWashContext())
+    {
+        var firstUser = await dbContext.Users.FirstOrDefaultAsync();
+        if (firstUser != null)
+        {
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, firstUser.UserId.ToString()),
+                new Claim(ClaimTypes.UserData, firstUser.RoleId.ToString()),
+                new Claim(ClaimTypes.Actor, firstUser.PersonId.ToString())
+                // new Claim(ClaimTypes.SerialNumber, firstUser.Login),
+                // new Claim(ClaimTypes.UserData, firstUser.Password),
+                // new Claim(ClaimTypes.NameIdentifier, firstUser.RoleId.ToString()),
+            }));
+        }
+    }
+    await next();
+});
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -40,22 +65,6 @@ app.UseSpaYarp();
 
 app.MapFallbackToFile("index.html");
 
+app.MapGroup("/Carwash").MapCarwashesApi();
+
 app.Run();
-
-public interface ICarwashService
-{
-    string Carwash();
-}
-
-public class CarwashService : ICarwashService
-{
-    public CarwashService(string connectionString)
-    {
-        
-    }
-    
-    public string Carwash()
-    {
-        return "какая-то автомойка";
-    }
-}
