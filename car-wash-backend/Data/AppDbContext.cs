@@ -10,8 +10,8 @@ public class AppDbContext : DbContext
         
     }
     
-    public DbSet<Carwash> Carwashes {get; set;} 
-    public DbSet<Order> Orders { get; set; }
-    public DbSet<User> Users { get; set; }
-    public DbSet<Person> People { get; set; }
+    // public DbSet<Carwash> Carwashes {get; set;} 
+    // public DbSet<Order> Orders { get; set; }
+    // public DbSet<User> Users { get; set; }
+    // public DbSet<Person> People { get; set; }
 }
