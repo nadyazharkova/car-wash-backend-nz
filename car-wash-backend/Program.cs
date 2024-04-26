@@ -15,7 +15,10 @@ builder.Services.AddDbContext<CarWashContext>(options =>
 
 //будет создан только один сервис при первом запросе
 builder.Services.AddScoped<UserAccessor>();
-builder.Services.AddHttpContextAccessor();//очень важная строчка!!
+builder.Services.AddScoped<CarwashAccessor>();
+
+builder.Services.AddHttpContextAccessor();//чтобы акцессоры работали
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -66,5 +69,6 @@ app.UseSpaYarp();
 app.MapFallbackToFile("index.html");
 
 app.MapGroup("/Carwash").MapCarwashesApi();
+//app.MapGroup("/Service").MapServicesApi();
 
 app.Run();
