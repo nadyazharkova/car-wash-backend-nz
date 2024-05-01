@@ -34,6 +34,7 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
 
     public Carwash Create(CarwashDto dto)
     {
+        var id = dto.Id;
         var carwashId = Guid.NewGuid();
         var newCarwash = new Carwash()
         {
@@ -63,6 +64,7 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
 
     public Carwash Update(CarwashDto dto)
     {
+        var id = dto.Id;
         var carwash = ValidateCarwashChange(dto.Id);
         carwash.Name = dto.Name;
         carwash.CarwashStreet = dto.CarwashStreet;
@@ -76,6 +78,7 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
     public void Delete(Guid id)
     {
         var carwash = ValidateCarwashChange(id);
+        db.Carwashes.Remove(carwash);
         db.SaveChanges();
     }
 
@@ -88,10 +91,10 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
                     { Content = new StringContent("Автомойка не найдена") 
                         //ReasonPhrase = message
                         });
-        if (carwash.CarwashId != userAccessor.Id)
-            throw new HttpResponseException(
-                new HttpResponseMessage(HttpStatusCode.Forbidden)
-                    { Content = new StringContent("Вы не можете редактировать эту автомойку") });
+        // if (carwash.CarwashId != userAccessor.Id)
+        //     throw new HttpResponseException(
+        //         new HttpResponseMessage(HttpStatusCode.Forbidden)
+        //             { Content = new StringContent("Вы не можете редактировать эту автомойку") });
         return carwash;
     }
 }
