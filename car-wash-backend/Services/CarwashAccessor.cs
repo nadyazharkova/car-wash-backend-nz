@@ -3,6 +3,7 @@ using System.Net;
 using System.Web.Http;
 using car_wash_backend.Dto;
 using car_wash_backend.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -10,7 +11,7 @@ namespace car_wash_backend.Services;
 
 public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
         //, ServicesAccessor servicesAccessor
-    )
+    ) : Controller
 {
     
     public IQueryable<Carwash> GetAll()
@@ -31,9 +32,10 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
         //carwash.Services = servicesAccessor.GetAll();
         return carwash;
     }
-
-    public Carwash Create(CarwashDto dto)
+    
+    public IActionResult Create(CarwashDto dto)
     {
+        var id = dto.Id;
         var carwashId = Guid.NewGuid();
         var newCarwash = new Carwash()
         {
@@ -44,7 +46,7 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
             ContactInfo = dto.ContactInfo
         };
         db.Carwashes.Add(newCarwash);
-        
+    
         var ownerId = Guid.NewGuid();
         var newEmployee = new Employee
         {
@@ -57,12 +59,15 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
         db.Employees.Add(newEmployee);
 
         db.SaveChanges();
-        
-        return GetById(newCarwash.CarwashId);
+    
+        // Получаем данные с помощью GetById и возвращаем их со статусом OK
+        var result = GetById(carwashId);
+        return Ok(result);
     }
 
     public Carwash Update(CarwashDto dto)
     {
+        var id = dto.Id;
         var carwash = ValidateCarwashChange(dto.Id);
         carwash.Name = dto.Name;
         carwash.CarwashStreet = dto.CarwashStreet;
@@ -76,6 +81,7 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
     public void Delete(Guid id)
     {
         var carwash = ValidateCarwashChange(id);
+        db.Carwashes.Remove(carwash);
         db.SaveChanges();
     }
 
@@ -88,10 +94,10 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
                     { Content = new StringContent("Автомойка не найдена") 
                         //ReasonPhrase = message
                         });
-        if (carwash.CarwashId != userAccessor.Id)
-            throw new HttpResponseException(
-                new HttpResponseMessage(HttpStatusCode.Forbidden)
-                    { Content = new StringContent("Вы не можете редактировать эту автомойку") });
+        // if (carwash.CarwashId != userAccessor.Id)
+        //     throw new HttpResponseException(
+        //         new HttpResponseMessage(HttpStatusCode.Forbidden)
+        //             { Content = new StringContent("Вы не можете редактировать эту автомойку") });
         return carwash;
     }
 }

@@ -15,31 +15,10 @@ public static class CarwashApi
     public static RouteGroupBuilder MapCarwashesApi(this RouteGroupBuilder builder)
     {
         builder.MapGet("", (CarwashAccessor carwashAccessor) => carwashAccessor.GetAll());
-
-        // builder.MapPost("", async (UserAccessor userAccessor, CarWashContext context, Carwash newCarwash) =>
-        // {
-        //     // Создаем новый экземпляр класса Employee
-        //     var newEmployee = new Employee
-        //     {
-        //         Carwash = newCarwash,
-        //         UserId = userAccessor.Id
-        //     };
-        //
-        //     // Добавляем владельца с прикрепленной автомойкой в контекст
-        //     context.Employees.Add(newEmployee);
-        //     context.Carwashes.Add(newCarwash);
-        //     
-        //     await context.SaveChangesAsync();
-        //
-        //     // Возвращаем созданный объект Carwash
-        //     return newCarwash;
-        // });
-        
-        //DTO - Data Transfer Object - объект для передачи данных
         
         builder.MapPost("", ( CarwashAccessor carwashAccessor, CarwashDto dto) => carwashAccessor.Create(dto));
         
-        // builder.MapPut("/{id}", Results<Ok<Carwash>, BadRequest<string>> (Guid id, CarwashDto dto, CarwashAccessor carwashAccessor)
+        // builder.MapPut("/{id}", Results<Ok<Carwash>, BadRequest<string>> (Guid id, CarwashAccessor carwashAccessor, CarwashDto dto)
         // {
         //     if (id != dto.Id)
         //         return BadRequest("Идентификаторы не совпадают");

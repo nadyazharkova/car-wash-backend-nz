@@ -1,9 +1,11 @@
-﻿using car_wash_backend.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using car_wash_backend.Models;
 
 namespace car_wash_backend.Dto;
 
 public class CarwashDto
 {
+    [Column("carwash_ID")]
     public Guid? Id { get; set; }
     public string? Name { get; set; } 
 
