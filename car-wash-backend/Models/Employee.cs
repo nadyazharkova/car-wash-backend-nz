@@ -11,9 +11,10 @@ public partial class Employee
     public Guid UserId { get; set; }
 
     public Guid CarwashId { get; set; }
-
+    
     [JsonIgnore]
     public virtual Carwash Carwash { get; set; } = null!;
-
+    
+    [JsonIgnore]
     public virtual User User { get; set; } = null!;
 }

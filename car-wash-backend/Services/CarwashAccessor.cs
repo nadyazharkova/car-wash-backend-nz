@@ -53,18 +53,22 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor, Servi
         // Добавляем владельца с прикрепленной автомойкой в БД
         db.Employees.Add(newEmployee);
         
-        var lastBoxId = db.Boxes.LastOrDefault().BoxId;
+        var lastBoxId = db.Boxes.Count();
 
         for (var i = 1; i <= dto.BoxAmount; i++)
         {
             var box = new Box();
             db.Boxes.Add(box);
-
+            
+            var boxInCarwashId = Guid.NewGuid();
+        
             var boxInCarwash = new BoxesInCarwash()
             {
+                BoxesInCarwashId = boxInCarwashId,
                 BoxId = lastBoxId + i,
                 CarwashId = carwashId,
-                //Carwash = newCarwash
+                Carwash = newCarwash,
+                Box = box,
             };
             db.BoxesInCarwashes.Add(boxInCarwash);
         }
