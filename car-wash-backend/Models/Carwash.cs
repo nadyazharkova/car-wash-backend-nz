@@ -15,6 +15,8 @@ public partial class Carwash
 
     public Guid CarwashId { get; set; }
 
+    public virtual ICollection<BoxesInCarwash> BoxesInCarwashes { get; set; } = new List<BoxesInCarwash>();
+
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();

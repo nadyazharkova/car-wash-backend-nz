@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace car_wash_backend.Models;
 
@@ -15,5 +16,6 @@ public partial class Day
 
     public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
 
+    [JsonIgnore]
     public virtual DayType Type { get; set; } = null!;
 }
