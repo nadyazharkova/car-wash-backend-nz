@@ -18,12 +18,7 @@ public static class CarwashApi
         
         builder.MapPost("", ( CarwashAccessor carwashAccessor, CarwashDto dto) => carwashAccessor.Create(dto));
         
-        // builder.MapPut("/{id}", Results<Ok<Carwash>, BadRequest<string>> (Guid id, CarwashAccessor carwashAccessor, CarwashDto dto)
-        // {
-        //     if (id != dto.Id)
-        //         return BadRequest("Идентификаторы не совпадают");
-        //     return Ok(carwashAccessor.Update(dto));
-        // });
+        builder.MapPut("/{id}", (Guid id, CarwashAccessor carwashAccessor, Carwash carwash) => carwashAccessor.Update(id, carwash));
 
         builder.MapDelete("/{id}", (Guid id, CarwashAccessor carwashAccessor) => carwashAccessor.Delete(id));
         
