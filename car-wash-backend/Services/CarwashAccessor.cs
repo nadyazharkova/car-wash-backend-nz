@@ -1,17 +1,12 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Web.Http;
 using car_wash_backend.Dto;
 using car_wash_backend.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace car_wash_backend.Services;
 
-public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
-        //, ServicesAccessor servicesAccessor
-    ) : Controller
+public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor, ServicesAccessor servicesAccessor) : Controller
 {
     
     public IQueryable<Carwash> GetAll()
@@ -29,13 +24,12 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
         var carwash = GetAll().FirstOrDefault( c => c.CarwashId == id);
         if (carwash == null)
             return null;
-        //carwash.Services = servicesAccessor.GetAll();
+        carwash.Services = servicesAccessor.GetAll().ToList();
         return carwash;
     }
     
     public IActionResult Create(CarwashDto dto)
     {
-        var id = dto.Id;
         var carwashId = Guid.NewGuid();
         var newCarwash = new Carwash()
         {
@@ -55,27 +49,50 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
             Carwash = newCarwash,
             UserId = userAccessor.Id
         };
+        
         // Добавляем владельца с прикрепленной автомойкой в БД
         db.Employees.Add(newEmployee);
+        
+        var lastBoxId = db.Boxes.LastOrDefault().BoxId;
+
+        for (var i = 1; i <= dto.BoxAmount; i++)
+        {
+            var box = new Box();
+            db.Boxes.Add(box);
+
+            var boxInCarwash = new BoxesInCarwash()
+            {
+                BoxId = lastBoxId + i,
+                CarwashId = carwashId,
+                //Carwash = newCarwash
+            };
+            db.BoxesInCarwashes.Add(boxInCarwash);
+        }
+        
 
         db.SaveChanges();
+        
+        
     
         // Получаем данные с помощью GetById и возвращаем их со статусом OK
         var result = GetById(carwashId);
         return Ok(result);
     }
 
-    public Carwash Update(CarwashDto dto)
+    public IActionResult Update(Guid id, Carwash carwash)
     {
-        var id = dto.Id;
-        var carwash = ValidateCarwashChange(dto.Id);
-        carwash.Name = dto.Name;
-        carwash.CarwashStreet = dto.CarwashStreet;
-        carwash.BoxAmount = dto.BoxAmount;
-        carwash.ContactInfo = dto.ContactInfo;
+        if (id != carwash.CarwashId ) 
+            return BadRequest("Идентификаторы не совпадают");
+        
+        var updatedCarwash = ValidateCarwashChange(carwash.CarwashId);
+        updatedCarwash.Name = carwash.Name;
+        updatedCarwash.CarwashStreet = carwash.CarwashStreet;
+        updatedCarwash.BoxAmount = carwash.BoxAmount;
+        updatedCarwash.ContactInfo = carwash.ContactInfo;
 
         db.SaveChanges();
-        return GetById(carwash.CarwashId);
+        
+        return Ok(GetById(updatedCarwash.CarwashId));
     }
 
     public void Delete(Guid id)
@@ -91,9 +108,7 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor
         if (carwash == null)
             throw new HttpResponseException(
                 new HttpResponseMessage(HttpStatusCode.NotFound)
-                    { Content = new StringContent("Автомойка не найдена") 
-                        //ReasonPhrase = message
-                        });
+                    { Content = new StringContent("Автомойка не найдена") });
         // if (carwash.CarwashId != userAccessor.Id)
         //     throw new HttpResponseException(
         //         new HttpResponseMessage(HttpStatusCode.Forbidden)

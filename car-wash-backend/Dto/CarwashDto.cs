@@ -5,7 +5,7 @@ namespace car_wash_backend.Dto;
 
 public class CarwashDto
 {
-    [Column("carwash_ID")]
+    [Column("carwashId")]
     public Guid? Id { get; set; }
     public string? Name { get; set; } 
 
