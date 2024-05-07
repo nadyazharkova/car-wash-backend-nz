@@ -9,7 +9,7 @@ public static class ServicesApi
     {
         builder.MapGet("", ( ServicesAccessor servicesAccessor) => servicesAccessor.GetAll());
         
-        builder.MapGet("{id}", (Guid id, ServicesAccessor servicesAccessor) => servicesAccessor.GetById(id));
+        builder.MapGet("/{id}", (Guid id, ServicesAccessor servicesAccessor) => servicesAccessor.GetById(id));
         
         builder.MapPost("", ( ServicesAccessor servicesAccessor, Service service) => 
             servicesAccessor.Create(service));
