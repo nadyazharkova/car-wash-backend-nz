@@ -74,5 +74,6 @@ app.MapGroup("/Carwash").MapCarwashesApi();
 app.MapGroup("/Service").MapServicesApi();
 app.MapGroup("/User").MapUserApi();
 app.MapGroup("/Person").MapPersonApi();
+app.MapGroup("/Order").MapOrderApi();
 
 app.Run();

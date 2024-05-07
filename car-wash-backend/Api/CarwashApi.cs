@@ -11,6 +11,8 @@ public static class CarwashApi
     {
         builder.MapGet("", (CarwashAccessor carwashAccessor) => carwashAccessor.GetAll());
         
+        builder.MapGet("/{id}", (Guid id, CarwashAccessor carwashAccessor) => carwashAccessor.GetById(id));
+        
         builder.MapPost("", ( CarwashAccessor carwashAccessor, CarwashDto dto) => carwashAccessor.Create(dto));
         
         builder.MapPut("/{id}", (Guid id, CarwashAccessor carwashAccessor, Carwash carwash) => carwashAccessor.Update(id, carwash));

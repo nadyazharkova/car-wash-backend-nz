@@ -7,8 +7,9 @@ public static class ServicesApi
 {
     public static RouteGroupBuilder MapServicesApi(this RouteGroupBuilder builder)
     {
-        builder.MapGet("", async ( ServicesAccessor servicesAccessor) => servicesAccessor.GetAll());
+        builder.MapGet("", ( ServicesAccessor servicesAccessor) => servicesAccessor.GetAll());
         
+        builder.MapGet("{id}", (Guid id, ServicesAccessor servicesAccessor) => servicesAccessor.GetById(id));
         
         builder.MapPost("", ( ServicesAccessor servicesAccessor, Service service) => 
             servicesAccessor.Create(service));

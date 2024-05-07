@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace car_wash_backend.Services;
 
 public class OrderAccessor (CarWashContext db, OrderStatusAccessor statusAccessor, 
-    CarwashAccessor carwashAccessor, UserAccessor userAccessor) : Controller
+    CarwashAccessor carwashAccessor, UserAccessor userAccessor, BoxesInCarwashAccessor boxesInCarwashAccessor) : Controller
 {
     public IQueryable<Order> GetAll()
     {
@@ -24,6 +24,7 @@ public class OrderAccessor (CarWashContext db, OrderStatusAccessor statusAccesso
     {
         var orderID = Guid.NewGuid();
         var defaultStatus = statusAccessor.GetDefaultStatus();
+        var availableBox = boxesInCarwashAccessor.GetAvailableBox(orderData.CarwashId);
 
         var order = new Order()
         {
@@ -35,8 +36,9 @@ public class OrderAccessor (CarWashContext db, OrderStatusAccessor statusAccesso
             User = userAccessor.GetById(orderData.UserId),
             StatusId = defaultStatus.StatusId,
             Status = defaultStatus,
-            BoxId = 
-                
+            BoxId = availableBox.BoxId,
+            Box = availableBox,
+            LicencePlate = orderData.LicencePlate,    
         };
         
         db.Orders.Add(order);
@@ -52,15 +54,18 @@ public class OrderAccessor (CarWashContext db, OrderStatusAccessor statusAccesso
         if (id != orderData.OrderId) 
             return BadRequest("Идентификаторы не совпадают");
         var updatedOrder = ValidateOrderChange(id);
+        
         var defaultStatus = statusAccessor.GetDefaultStatus();
+        var availableBox = boxesInCarwashAccessor.GetAvailableBox(orderData.CarwashId);
         
         updatedOrder.DateTime = orderData.DateTime;
         updatedOrder.CarwashId = orderData.CarwashId;
         updatedOrder.Carwash = orderData.Carwash;
-        updatedOrder.UserId = orderData.UserId;
-        updatedOrder.User = orderData.User;
         updatedOrder.StatusId = defaultStatus.StatusId;
         updatedOrder.Status = defaultStatus;
+        updatedOrder.LicencePlate = orderData.LicencePlate;
+        updatedOrder.BoxId = availableBox.BoxId;
+        updatedOrder.Box = availableBox;
 
         db.SaveChanges();
         
@@ -69,8 +74,8 @@ public class OrderAccessor (CarWashContext db, OrderStatusAccessor statusAccesso
 
     public void Delete(Guid id)
     {
-        var person = ValidateOrderChange(id);
-        db.People.Remove(person);
+        var order = ValidateOrderChange(id);
+        db.Orders.Remove(order);
         db.SaveChanges();
     }
 
