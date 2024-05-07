@@ -21,13 +21,15 @@ public class ServicesAccessor(CarWashContext db, ServiceStatusAccessor statusAcc
     public IActionResult Create(Service serviceData)
     {
         var serviceId = Guid.NewGuid();
+        var defaultStatus = statusAccessor.GetDefaultStatus();
         var newService = new Service()
         {
             ServiceId = serviceId,
             Name = serviceData.Name,
             Price = serviceData.Price,
             Duration = serviceData.Duration,
-            Status = statusAccessor.GetByName("available"),
+            Status = defaultStatus,
+            StatusId = defaultStatus.StatusId,
             CarwashId = serviceData.CarwashId
         };
         db.Services.Add(newService);
@@ -39,20 +41,20 @@ public class ServicesAccessor(CarWashContext db, ServiceStatusAccessor statusAcc
         return Ok(result);
     }
 
-    public IActionResult Update(Guid id, Service service)
+    public IActionResult Update(Guid id, Service serviceData)
     {
-        if (id != service.ServiceId ) 
+        if (id != serviceData.ServiceId ) 
             return BadRequest("Идентификаторы не совпадают");
         
-        var updatedService = ValidateServiceChange(service.ServiceId);
-        updatedService.Name = service.Name;
-        updatedService.Price = service.Price;
-        updatedService.Duration = service.Duration;
-        updatedService.Status = service.Status;
+        var updatedService = ValidateServiceChange(id);
+        updatedService.Name = serviceData.Name;
+        updatedService.Price = serviceData.Price;
+        updatedService.Duration = serviceData.Duration;
+        updatedService.Status = serviceData.Status;
 
         db.SaveChanges();
         
-        return Ok(GetById(updatedService.ServiceId));
+        return Ok(GetById(id));
     }
 
     public void Delete(Guid id)

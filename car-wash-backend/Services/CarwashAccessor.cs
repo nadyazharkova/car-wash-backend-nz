@@ -72,31 +72,26 @@ public class CarwashAccessor(CarWashContext db, UserAccessor userAccessor, Servi
             };
             db.BoxesInCarwashes.Add(boxInCarwash);
         }
-        
-
         db.SaveChanges();
-        
-        
     
         // Получаем данные с помощью GetById и возвращаем их со статусом OK
         var result = GetById(carwashId);
         return Ok(result);
     }
 
-    public IActionResult Update(Guid id, Carwash carwash)
+    public IActionResult Update(Guid id, Carwash carwashData)
     {
-        if (id != carwash.CarwashId ) 
+        if (id != carwashData.CarwashId ) 
             return BadRequest("Идентификаторы не совпадают");
         
-        var updatedCarwash = ValidateCarwashChange(carwash.CarwashId);
-        updatedCarwash.Name = carwash.Name;
-        updatedCarwash.CarwashStreet = carwash.CarwashStreet;
-        updatedCarwash.BoxAmount = carwash.BoxAmount;
-        updatedCarwash.ContactInfo = carwash.ContactInfo;
+        var updatedCarwash = ValidateCarwashChange(id);
+        updatedCarwash.Name = carwashData.Name;
+        updatedCarwash.CarwashStreet = carwashData.CarwashStreet;
+        updatedCarwash.BoxAmount = carwashData.BoxAmount;
+        updatedCarwash.ContactInfo = carwashData.ContactInfo;
 
         db.SaveChanges();
-        
-        return Ok(GetById(updatedCarwash.CarwashId));
+        return Ok(GetById(id));
     }
 
     public void Delete(Guid id)

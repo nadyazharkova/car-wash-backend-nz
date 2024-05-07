@@ -72,5 +72,7 @@ app.MapFallbackToFile("index.html");
 
 app.MapGroup("/Carwash").MapCarwashesApi();
 app.MapGroup("/Service").MapServicesApi();
+app.MapGroup("/User").MapUserApi();
+app.MapGroup("/Person").MapPersonApi();
 
 app.Run();

@@ -1,11 +1,6 @@
-﻿using System.Collections.Immutable;
-using System.Runtime.InteropServices.JavaScript;
-using System.Security.Claims;
-using car_wash_backend.Dto;
+﻿using car_wash_backend.Dto;
 using car_wash_backend.Models;
 using car_wash_backend.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 
 namespace car_wash_backend.Api;
 
