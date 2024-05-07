@@ -12,8 +12,8 @@ public static class UserApi
         builder.MapPost("", ( UserAccessor servicesAccessor, User service) => 
             servicesAccessor.Create(service));
         
-        // builder.MapPut("/{id}", (Guid id, UserAccessor userAccessor, User user) => 
-        //     userAccessor.Update(id, user));
+        builder.MapPut("/{id}", (Guid id, UserAccessor userAccessor, User user) => 
+             userAccessor.Update(id, user));
 
         builder.MapDelete("/{id}", (Guid id, UserAccessor userAccessor) => userAccessor.Delete(id));
         
