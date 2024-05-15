@@ -14,10 +14,15 @@ builder.Services.AddDbContext<CarWashContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //будет создан только один сервис при первом запросе
-builder.Services.AddScoped<UserAccessor>();
+builder.Services.AddScoped<BoxesInCarwashAccessor>();
 builder.Services.AddScoped<CarwashAccessor>();
+builder.Services.AddScoped<OrderAccessor>();
+builder.Services.AddScoped<OrderStatusAccessor>();
+builder.Services.AddScoped<PersonAccessor>();
+builder.Services.AddScoped<RoleAccessor>();
 builder.Services.AddScoped<ServicesAccessor>();
 builder.Services.AddScoped<ServiceStatusAccessor>();
+builder.Services.AddScoped<UserAccessor>();
 
 builder.Services.AddHttpContextAccessor();//чтобы акцессоры работали
 builder.Services.AddHttpClient();
@@ -71,9 +76,9 @@ app.UseSpaYarp();
 app.MapFallbackToFile("index.html");
 
 app.MapGroup("/Carwash").MapCarwashesApi();
+app.MapGroup("/Order").MapOrderApi();
+app.MapGroup("/Person").MapPersonApi();
 app.MapGroup("/Service").MapServicesApi();
 app.MapGroup("/User").MapUserApi();
-app.MapGroup("/Person").MapPersonApi();
-app.MapGroup("/Order").MapOrderApi();
 
 app.Run();
