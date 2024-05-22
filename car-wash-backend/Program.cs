@@ -46,7 +46,7 @@ app.Use(async (context, next) =>
 {
     using (var dbContext = new CarWashContext())
     {
-        var firstUser = await dbContext.Users.FirstOrDefaultAsync();
+        var firstUser = await dbContext.Users.FirstOrDefaultAsync(u => u.PersonId.ToString() == "08e85b0b-a800-44a3-ac06-797c94ef7c9a");
         if (firstUser != null)
         {
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
@@ -80,5 +80,6 @@ app.MapGroup("/Order").MapOrderApi();
 app.MapGroup("/Person").MapPersonApi();
 app.MapGroup("/Service").MapServicesApi();
 app.MapGroup("/User").MapUserApi();
+app.MapGroup("/Role").MapRoleApi();
 
 app.Run();

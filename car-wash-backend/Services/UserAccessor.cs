@@ -22,6 +22,7 @@ public class UserAccessor : Controller
     {
         Id = Guid.Parse(accessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
         RoleId = Guid.Parse(accessor.HttpContext.User.FindFirstValue(ClaimTypes.UserData));
+        PersonId = Guid.Parse(accessor.HttpContext.User.FindFirstValue(ClaimTypes.Actor));
         _db = db;
         _personAccessor = personAccessor;
     }
@@ -67,6 +68,9 @@ public class UserAccessor : Controller
     
         // Получаем данные с помощью GetById и возвращаем их со статусом OK
         var result = GetById(userId);
+        Id = userId;
+        RoleId = userData.RoleId;
+        PersonId = userData.PersonId;
         return Ok(result);
     }
 
@@ -80,6 +84,7 @@ public class UserAccessor : Controller
         updatedUser.Password = user.Password;
 
         _db.SaveChanges();
+        
         
         return Ok(GetById(updatedUser.UserId));
     }
