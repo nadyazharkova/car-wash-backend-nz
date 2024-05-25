@@ -49,7 +49,7 @@ public class PersonAccessor (CarWashContext db) : Controller
         var updatedPerson = ValidatePersonChange(id);
         updatedPerson.FirstName = personData.FirstName;
         updatedPerson.LastName = personData.LastName;
-        updatedPerson.FathersName = personData.FirstName;
+        updatedPerson.FathersName = personData.FathersName;
         updatedPerson.PhoneNumber = personData.PhoneNumber;
         updatedPerson.Email = personData.Email;
 
