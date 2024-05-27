@@ -140,7 +140,8 @@ async Task<bool> CheckLoginAndPassword(string login, string password)
         using (dbContext = new CarWashContext())
         {
             user = await dbContext.Users.FirstOrDefaultAsync(u => u.Password == password && u.Login.Contains(login));
-            //user.Role = dbContext.Roles.FirstOrDefault(r => r.RoleId == user.RoleId);
+            if (user.UserId != null)
+                user.Role = dbContext.Roles.FirstOrDefault(r => r.RoleId == user.RoleId);
             return user?.UserId!= null;
         }
     }
@@ -164,15 +165,13 @@ app.MapPost("/login", async ([FromQuery] string login, [FromQuery] string passwo
     // Генерация токена
     var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key_here"));
     var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-    //var role = 
 
     var token = new JwtSecurityToken(
-        issuer: "your_issuer",
+        issuer: user.Role.RoleName,
         audience: "your_audience",
         claims: new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()), // ID пользователя
-            //new Claim(JwtRegisteredClaimNames.Actort, )
             new Claim(ClaimTypes.UserData, user.UserId.ToString()),
             new Claim(ClaimTypes.Role, user.RoleId.ToString()),
         },
@@ -209,20 +208,6 @@ app.Use(async (context, next) =>
                         // new Claim(ClaimTypes.UserData, firstUser.Password),
                 }));
             }
-        }
-
-        if (roleClaim == "owner")
-        {
-            // Действия для владельцев
-        }
-        else if (roleClaim == "client")
-        {
-                // Действия для клиентов
-        }
-        else
-        {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            return;
         }
     }
     await next.Invoke();
