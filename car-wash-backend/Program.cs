@@ -12,7 +12,6 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddControllersWithViews();
 builder.Services.AddSpaYarp();
 
@@ -65,7 +64,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("http://localhost:5173<") // Замените на домен вашего клиента
+        builder.WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -88,30 +87,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-
-app.Use(async (context, next) =>
-{
-    using (var dbContext = new CarWashContext())
-    {
-        var firstUser = await dbContext.Users.FirstOrDefaultAsync(u => u.PersonId.ToString() == "08e85b0b-a800-44a3-ac06-797c94ef7c9a");
-        if (firstUser != null)
-        {
-            context.User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, firstUser.UserId.ToString()),
-                new Claim(ClaimTypes.UserData, firstUser.RoleId.ToString()),
-                new Claim(ClaimTypes.Actor, firstUser.PersonId.ToString())
-                // new Claim(ClaimTypes.SerialNumber, firstUser.Login),
-                // new Claim(ClaimTypes.UserData, firstUser.Password),
-                // new Claim(ClaimTypes.NameIdentifier, firstUser.RoleId.ToString()),
-            }));
-        }
-    }
-    await next();
-});
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+var dbContext = new CarWashContext();
+var user = new User();
+
 
 app.MapControllerRoute(
     name: "default",
@@ -130,92 +111,90 @@ app.MapGroup("/Service").MapServicesApi();
 app.MapGroup("/User").MapUserApi();
 app.MapGroup("/Role").MapRoleApi();
 
-static bool CheckLoginAndPassword(string login, string password)
+async Task<bool> CheckLoginAndPassword(string login, string password)
 {
-    return true;
+    try
+    {
+        using (dbContext = new CarWashContext())
+        {
+            user = await dbContext.Users.FirstOrDefaultAsync(u => u.Password == password && u.Login.Contains(login));
+            if (user.UserId != null)
+                user.Role = dbContext.Roles.FirstOrDefault(r => r.RoleId == user.RoleId);
+            return user?.UserId!= null;
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error checking login and password: {ex.Message}");
+        return false;
+    }
 }
 
-app.MapPost("/login", async ([FromQuery] string login, [FromQuery] string password) =>
+
+app.MapPost("/login", async (IHttpContextAccessor accessor, [FromQuery] string login, [FromQuery] string password) =>
 {
     // Проверка логина и пароля
-    // Например, здесь должна быть логика проверки в базе данных
-    bool isValidLoginAndPassword = CheckLoginAndPassword(login, password);
-
-
+    bool isValidLoginAndPassword = await CheckLoginAndPassword(login, password);
+    
     if (!isValidLoginAndPassword)
     {
         return Results.Unauthorized();
     }
-    var roleId = "";
-    var userId = "";
-
-    // Генерация токена
-    var tokenHandler = new JwtSecurityTokenHandler();
-    var tokenDescriptor = new SecurityTokenDescriptor
-    {
-        Subject = new ClaimsIdentity(new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()), // ID пользователя
-            new Claim("Role", roleId.ToString()), // ID роли
-        }),
-        Expires = DateTime.UtcNow.AddDays(7),
-        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])), SecurityAlgorithms.HmacSha256Signature)
-    };
     
-    var securityToken = tokenHandler.CreateToken(tokenDescriptor);
-    var token = tokenHandler.WriteToken(securityToken);
+    accessor.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+        new Claim(ClaimTypes.UserData, user.UserId.ToString()),
+        new Claim(ClaimTypes.Role, user.RoleId.ToString()),
+    }));
+ ;
+    // Генерация токена
+    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your_secret_key_here"));
+    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-    return Results.Ok(new { token });
+    var token = new JwtSecurityToken(
+        issuer: user.Role.RoleName,
+        audience: "your_audience",
+        claims: new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()), // ID пользователя
+            new Claim(ClaimTypes.UserData, user.UserId.ToString()),
+            new Claim(ClaimTypes.Role, user.RoleId.ToString()),
+        },
+        expires: DateTime.Now.AddDays(1), // Токен истекает через 1 день
+        signingCredentials: credentials);
+
+    return Results.Ok(token);
 }).WithDisplayName("Login");
 
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments("/") && context.Request.Method == HttpMethod.Get.Method)
-    {
-        var authHeader = context.Request.Headers["Authorization"];
-        //if (authHeader != "" && authHeader.ToString().StartsWith("Bearer "))
-        if (authHeader.Count > 0)
-        {
-            var token = authHeader[1];
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
-            var idClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            using (var dbContext = new CarWashContext())
-            {
-                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == idClaim);
-                if (user != null)
-                {
-                    context.User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                        new Claim(ClaimTypes.UserData, user.RoleId.ToString()),
-                        new Claim(ClaimTypes.Actor, user.PersonId.ToString()),
-                        new Claim(ClaimTypes.Role, user.Role.ToString())
-                        // new Claim(ClaimTypes.SerialNumber, firstUser.Login),
-                        // new Claim(ClaimTypes.UserData, firstUser.Password),
-                        // new Claim(ClaimTypes.NameIdentifier, firstUser.RoleId.ToString()),
-                    }));
-                }
-            }
-            if (roleClaim == "owner")
-            {
-                // Действия для владельцев
-            }
-            else if (roleClaim == "client")
-            {
-                // Действия для клиентов
-            }
-            else
-            {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                return;
-            }
-        }
-    }
-    await next.Invoke();
-});
-
+// app.Use(async (context, next) =>
+// {
+//     var authHeader = context.Request.Headers["Authorization"];
+//     if (authHeader.Count > 0)
+//     {
+//         var token = authHeader[0].Split(' ')[1]; // Извлекаем токен из заголовка Authorization
+//         var handler = new JwtSecurityTokenHandler();
+//         var jwtToken = handler.ReadJwtToken(token);
+//
+//         // Здесь вы можете добавить логику для получения данных пользователя из базы данных
+//         // на основе информации в токене, например, ID пользователя (sub claim)
+//
+//         // Пример получения данных пользователя из базы данных
+//         using (dbContext = new CarWashContext())
+//         {
+//             user = await dbContext.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub).Value);
+//             if (user!= null)
+//             {
+//                 context.User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+//                 {
+//                     new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+//                     new Claim(ClaimTypes.UserData, user.UserId.ToString()),
+//                     new Claim(ClaimTypes.Role, user.RoleId.ToString()),
+//                 }));
+//             }
+//         }
+//     }
+//     await next();
+// });
 
 app.Run();
