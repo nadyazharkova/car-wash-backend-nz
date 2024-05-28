@@ -53,7 +53,7 @@ app.Use(async (context, next) =>
 {
     using (var dbContext = new CarWashContext())
     {
-        var firstUser = await dbContext.Users.FirstOrDefaultAsync(u => u.PersonId.ToString() == "08e85b0b-a800-44a3-ac06-797c94ef7c9a");
+        var firstUser = await dbContext.Users.FirstOrDefaultAsync(u => u.UserId.ToString() == "3ef3ac6a-caa9-4499-8141-ba6d88eeaff7");
         if (firstUser != null)
         {
             context.User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
